@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"hatchain/basic_prototype/blockchain"
+	"hatchain/blockchain"
 	"time"
 )
 

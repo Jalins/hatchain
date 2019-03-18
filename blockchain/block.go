@@ -3,7 +3,6 @@ package blockchain
 import (
 	"bytes"
 	"crypto/sha256"
-	"fmt"
 	"strconv"
 	"time"
 )
@@ -25,7 +24,6 @@ type Block struct {
 func (block *Block) setHash(){
 	// 将int64的时间戳转化为字节数组，这里的第二个参数的意思是转化为几进制，可选范围从2到36，FormatInt返回的是一个字符串
 	timestamp := []byte(strconv.FormatInt(block.Timestamp, 10))
-	fmt.Println(timestamp)
 
 	// 使用bytes.Join方法对各个字节数组进行拼接，第二个参数的意思是切割符，例如[]byte(",")，以逗号来切割
 	header := bytes.Join([][]byte{timestamp, block.PrevHash, block.Data},[]byte{})
@@ -36,11 +34,13 @@ func (block *Block) setHash(){
 
 }
 
-// 创建新的区块
+// 创建新的区块，工厂方法
 func NewBlock(data string, prevHash []byte) *Block {
 
 	block := &Block{time.Now().Unix(), prevHash, []byte(data), []byte{}}
-	block.setHash()
+	pow := NewProofOfWork(block)
+	pow.Run()
+	//block.setHash()
 	return block
 }
 
