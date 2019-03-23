@@ -18,6 +18,8 @@ type Block struct {
 	Data []byte
 	// 当前hash
 	Hash []byte
+	// 随机数
+	Nonce int
 }
 
 // 在区块中设置当前的hash值
@@ -37,9 +39,11 @@ func (block *Block) setHash(){
 // 创建新的区块，工厂方法
 func NewBlock(data string, prevHash []byte) *Block {
 
-	block := &Block{time.Now().Unix(), prevHash, []byte(data), []byte{}}
+	block := &Block{time.Now().Unix(), prevHash, []byte(data), []byte{}, 0}
 	pow := NewProofOfWork(block)
-	pow.Run()
+	nonce, hash := pow.Run()
+	block.Hash = hash[:]
+	block.Nonce = nonce
 	//block.setHash()
 	return block
 }
