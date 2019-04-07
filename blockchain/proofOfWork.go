@@ -16,15 +16,15 @@ type ProofOfWork struct {
 
 var maxNonce = math.MaxInt64
 
-// 定义一个最大值等于256难度值，难度值越小，则计算量越大
+// 定义一个最大值等于256难度值，targetBits越大表示前导零越多也就意味这个计算量越大
 const targetBits  = 18
 
 // 工厂方法，返回一个pow对象，包含一个区块跟一个目标值
 func NewProofOfWork(block *Block) *ProofOfWork{
-	// 第一位数为1
+	// 设置一个为1的目标数
 	target := big.NewInt(1)
 	target.Lsh(target, (256 - targetBits))
-	fmt.Println(target)
+	fmt.Printf("全网的目标值为：%s\n", target)
 	return &ProofOfWork{block, target}
 }
 
