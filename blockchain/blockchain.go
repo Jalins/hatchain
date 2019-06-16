@@ -9,14 +9,56 @@ import (
 // 数据库的名字
 const dbFile = "blockchain.db"
 
-// 表命
+// 表名
 const blocksBucket = "blocks "
 
 // blockchain的数据结构，包括一个tip跟数据库
 type BlockChain struct {
-	Tip []byte   // 存储区块链中最后一个区块的hash值
+	Tip []byte   // 存储区块链中最新区块的hash值,可以根据这个进行迭代找到区块链中的所有区块信息
+				 //选择一个 tip 就是意味着给一条链“投票”。一条链可能有多个分支，最长的那条链会被认为是主分支
 	DB  *bolt.DB // 数据库对象
 }
+
+/*
+迭代器的设计思路：
+1.先生成一个迭代器对象（结构体对象），
+2.使用这个迭代器对象的Next方法进行遍历
+*/
+
+type BlockChainIterator struct {
+	CurrentHash []byte
+	DB *bolt.DB
+}
+
+// 返回一个BlockChainIterator对象，这样就可以在逻辑上将这个迭代器附属在BlockChain上
+func (bc *BlockChain) Iterator() *BlockChainIterator {
+	return &BlockChainIterator{bc.Tip, bc.DB}
+}
+
+
+
+func (bci *BlockChainIterator) Next() *BlockChainIterator {
+	var nextHash []byte
+	err := bci.DB.View(func(tx *bolt.Tx) error {
+		bucket := tx.Bucket([]byte(blocksBucket))
+
+		// 获取点前区块的hash值
+		currentBlockByte := bucket.Get(bci.CurrentHash)
+		// 反序列化数据
+		currentBlock := DeSerializeBlock(currentBlockByte)
+
+		nextHash = currentBlock.PrevHash
+
+		return nil
+	})
+
+	if err != nil {
+		log.Panic(err)
+	}
+
+	return &BlockChainIterator{nextHash, bci.DB}
+}
+
 
 // 新增区块的方法
 func (blockchain *BlockChain) AddBlock(data string) {
@@ -34,13 +76,13 @@ func (blockchain *BlockChain) AddBlock(data string) {
 			log.Panic(err)
 		}
 
-		// 更新一下latest的值
+		// 更新一下latest的值，这个是记录到数据库进行持久化存储
 		err = b.Put([]byte("latest"), newBlock.Hash)
 		if err != nil {
 			log.Panic(err)
 		}
 
-		// 将Tip更新为最新区块的hash值
+		// 将Tip更新为最新区块的hash值, 这个是更新内存中的tip，一旦重启会从数据库进行读取
 		blockchain.Tip = newBlock.Hash
 		return nil
 	})
@@ -104,3 +146,4 @@ func NewBlockChain() *BlockChain {
 
 	return &BlockChain{tip, db}
 }
+

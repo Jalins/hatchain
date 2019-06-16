@@ -22,21 +22,6 @@ type Block struct {
 	Nonce int
 }
 
-//
-//// 在区块中设置当前的hash值
-//func (block *Block) setHash(){
-//	// 将int64的时间戳转化为字节数组，这里的第二个参数的意思是转化为几进制，可选范围从2到36，FormatInt返回的是一个字符串
-//	timestamp := []byte(strconv.FormatInt(block.Timestamp, 10))
-//
-//	// 使用bytes.Join方法对各个字节数组进行拼接，第二个参数的意思是切割符，例如[]byte(",")，以逗号来切割
-//	header := bytes.Join([][]byte{timestamp, block.PrevHash, block.Data},[]byte{})
-//
-//	// 对得到的字节数据进行hash运算
-//	hash := sha256.Sum256(header)
-//	block.Hash = hash[:]
-//
-//}
-
 // 创建新的区块，工厂方法
 func NewBlock(data string, prevHash []byte) *Block {
 
@@ -51,17 +36,18 @@ func NewBlock(data string, prevHash []byte) *Block {
 
 
 func  GenesisBlock() *Block{
-	block := NewBlock("Genesis block!",[]byte{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0})
+	block := NewBlock("Genesis block!",[]byte{})
 
 	return block
 }
 
 //区块序列化
 func (block *Block) Serialize() []byte  {
-
+	// 开辟内存，存放字节集合
 	var result bytes.Buffer
+	// 创建编码对象
 	encoder := gob.NewEncoder(&result)
-
+	// 进行编码操作
 	err := encoder.Encode(block)
 	if err != nil{
 
@@ -73,10 +59,11 @@ func (block *Block) Serialize() []byte  {
 
 //区块反序列化
 func DeSerializeBlock(blockBytes []byte) *Block  {
-
+	// 用于存储字节转换的对象
 	var block *Block
+	// 创建解码对象，传入一个io读器
 	dencoder := gob.NewDecoder(bytes.NewReader(blockBytes))
-
+	// 进行解码操作
 	err := dencoder.Decode(&block)
 	if err != nil{
 

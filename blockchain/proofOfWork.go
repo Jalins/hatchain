@@ -24,7 +24,7 @@ func NewProofOfWork(block *Block) *ProofOfWork{
 	// 设置一个为1的目标数
 	target := big.NewInt(1)
 	target.Lsh(target, (256 - targetBits))
-	fmt.Printf("全网的目标值为：%s\n", target)
+
 	return &ProofOfWork{block, target}
 }
 
@@ -44,9 +44,6 @@ func (pow *ProofOfWork) Run() (int, []byte){
 		// 又提供了方便的工具函数可以对数据进行处理，如SetBytes和Cmp函数
 		hashInt.SetBytes(hash[:])
 
-		// hashInt < pow.target -1
-		// hashInt = pow.target 0
-		// hashInt > pow.target 1
 		if hashInt.Cmp(pow.target) == -1 {
 			break
 		}else {
