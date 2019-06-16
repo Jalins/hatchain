@@ -36,18 +36,16 @@ func (bc *BlockChain) Iterator() *BlockChainIterator {
 }
 
 
-
-func (bci *BlockChainIterator) Next() *BlockChainIterator {
-	var nextHash []byte
+// 返回下一个区块
+func (bci *BlockChainIterator) Next() *Block {
+	var currentBlock *Block
 	err := bci.DB.View(func(tx *bolt.Tx) error {
 		bucket := tx.Bucket([]byte(blocksBucket))
 
 		// 获取点前区块的hash值
 		currentBlockByte := bucket.Get(bci.CurrentHash)
 		// 反序列化数据
-		currentBlock := DeSerializeBlock(currentBlockByte)
-
-		nextHash = currentBlock.PrevHash
+		currentBlock = DeSerializeBlock(currentBlockByte)
 
 		return nil
 	})
@@ -55,8 +53,10 @@ func (bci *BlockChainIterator) Next() *BlockChainIterator {
 	if err != nil {
 		log.Panic(err)
 	}
+	// 把上一个区块的hash值赋值给迭代器中的CurrentHash，这样就可以逐次遍历
+	bci.CurrentHash = currentBlock.PrevHash
 
-	return &BlockChainIterator{nextHash, bci.DB}
+	return currentBlock
 }
 
 

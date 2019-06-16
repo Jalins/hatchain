@@ -1,34 +1,15 @@
 package main
 
-import (
-	"fmt"
-	"hatchain/blockchain"
-	"math/big"
-)
+import "hatchain/blockchain"
 
 func main() {
-	bc := blockchain.NewBlockChain()
 
+	blockChain := blockchain.NewBlockChain()
 
-	bc.AddBlock("send 9 BTC to Bob from Lily")
-	bc.AddBlock("send 5 BTC to Bob from Lily")
-	bc.AddBlock("send 7 BTC to Bob from Lily")
+	defer blockChain.DB.Close()
 
-	for {
-		var hashInt *big.Int
+	cli := blockchain.CLI{blockChain}
 
-		blockChainIterator := bc.Iterator()
-
-		fmt.Printf("%x\n", blockChainIterator.CurrentHash)
-
-		blockChainIterator = blockChainIterator.Next()
-
-		hashInt.SetBytes(blockChainIterator.CurrentHash)
-
-		if hashInt.Cmp(big.NewInt(0)) == 0 {
-			break
-		}
-	}
-
+	cli.Run()
 
 }
